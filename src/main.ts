@@ -19,6 +19,12 @@ import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { json } from 'express';
 
+import {
+	typesBundle,
+	typesChain,
+	typesRpc,
+	typesSpec,
+} from './api-types-config';
 import App from './App';
 import { Config } from './Config';
 import * as controllers from './controllers';
@@ -57,6 +63,10 @@ async function main() {
 	// Instantiate a web socket connection to the node for basic polkadot-js use
 	const api = await ApiPromise.create({
 		provider: new WsProvider(config.SUBSTRATE.WS_URL),
+		rpc: typesRpc,
+		typesBundle,
+		typesChain,
+		typesSpec,
 		types: {
 			...config.SUBSTRATE.CUSTOM_TYPES,
 		},
