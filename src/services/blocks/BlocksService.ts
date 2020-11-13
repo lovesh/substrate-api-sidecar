@@ -159,10 +159,9 @@ export class BlocksService extends AbstractService {
 				const len = block.extrinsics[idx].encodedLength;
 				const weight = weightInfo.weight;
 
-				const partialFee = calcFee.calc_fee(
-					BigInt(weight.toString()),
-					len
-				);
+				const partialFee = calcFee
+					? calcFee.calc_fee(BigInt(weight.toString()), len)
+					: undefined;
 
 				extrinsics[idx].info = api.createType('RuntimeDispatchInfo', {
 					weight,
@@ -335,11 +334,6 @@ export class BlocksService extends AbstractService {
 			parentParentHash = parentHash;
 		}
 
-		const perByte = api.consts.transactionPayment.transactionByteFee;
-		const extrinsicBaseWeight = api.consts.system.extrinsicBaseWeight;
-		const multiplier = await api.query.transactionPayment.nextFeeMultiplier.at(
-			parentHash
-		);
 		// The block where the runtime is deployed falsely proclaims it would
 		// be already using the new runtime. This workaround therefore uses the
 		// parent of the parent in order to determine the correct runtime under which
@@ -347,6 +341,21 @@ export class BlocksService extends AbstractService {
 		const version = await api.rpc.state.getRuntimeVersion(parentParentHash);
 		const specName = version.specName.toString();
 		const specVersion = version.specVersion.toNumber();
+
+		const perByte = api.consts?.transactionPayment?.transactionByteFee;
+		const extrinsicBaseWeight = api.consts?.system?.extrinsicBaseWeight;
+		const multiplier = await api.query?.transactionPayment?.nextFeeMultiplier?.at(
+			parentHash
+		);
+
+		if (!(perByte && extrinsicBaseWeight && multiplier)) {
+			return {
+				calcFee: null,
+				specName,
+				specVersion,
+			};
+		}
+
 		const coefficients = api.consts.transactionPayment.weightToFee.map(
 			(c) => {
 				return {
