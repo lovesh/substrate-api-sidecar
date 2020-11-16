@@ -67,9 +67,9 @@ async function main() {
 		typesBundle,
 		typesChain,
 		typesSpec,
-		types: {
-			...config.SUBSTRATE.CUSTOM_TYPES,
-		},
+		// types: {
+		// 	...config.SUBSTRATE.CUSTOM_TYPES,
+		// },
 	});
 
 	// Gather some basic details about the node so we can display a nice message
